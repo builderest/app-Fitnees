@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#0b6ef6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
+    <link rel="manifest" href="manifest.json">
+    <title>VidaPro+ WebApp</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="desktop-blocker" class="desktop-blocker hidden">
+        <div class="blocker-card">
+            <h1>VidaPro+</h1>
+            <p>Esta aplicación solo está disponible en dispositivos móviles.</p>
+        </div>
+    </div>
+
+    <div id="app" class="app-shell">
+        <header class="app-header">
+            <div>
+                <h1>VidaPro+</h1>
+                <small>Vida saludable, rutinas y hábitos</small>
+            </div>
+            <div class="header-actions">
+                <button id="btnToggleTheme" aria-label="Cambiar tema">🌓</button>
+                <button id="btnLogout" class="text">Salir</button>
+            </div>
+        </header>
+
+        <main id="view-container" class="view-container">
+            <!-- vistas dinámicas -->
+        </main>
+
+        <nav class="bottom-nav">
+            <button data-view="home" class="active">Inicio</button>
+            <button data-view="routines">Rutinas</button>
+            <button data-view="meals">Comidas</button>
+            <button data-view="water">Agua</button>
+            <button data-view="habits">Hábitos</button>
+            <button data-view="progress">Progreso</button>
+        </nav>
+    </div>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
