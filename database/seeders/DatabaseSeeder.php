@@ -1,77 +1,71 @@
 <?php
-require __DIR__ . '/../../vendor/autoload.php';
 
-use App\Models\User;
+namespace Database\Seeders;
+
 use App\Models\Exercise;
+use App\Models\User;
+use App\Models\WorkoutDay;
+use App\Models\WorkoutExercise;
 use App\Models\WorkoutProgram;
-use App\Models\WorkoutSession;
-use App\Models\UserProgress;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
-$admin = new User([
-    'name' => 'Admin Coach',
-    'email' => 'admin@example.com',
-    'password' => password_hash('password', PASSWORD_BCRYPT),
-    'role' => 'admin',
-    'plan' => 'premium'
-]);
-$admin->save();
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $admin = User::factory()->create([
+            'name' => 'Admin Coach',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+            'plan' => 'premium',
+            'premium_until' => now()->addYear(),
+        ]);
 
-$coach = new User([
-    'name' => 'Coach Prime',
-    'email' => 'coach@example.com',
-    'password' => password_hash('password', PASSWORD_BCRYPT),
-    'role' => 'coach',
-    'plan' => 'premium'
-]);
-$coach->save();
+        $this->seedExercises();
 
-$sampleUser = new User([
-    'name' => 'Athlete',
-    'email' => 'user@example.com',
-    'password' => password_hash('password', PASSWORD_BCRYPT),
-    'role' => 'user',
-    'training_goal' => 'muscle_gain',
-    'training_level' => 'intermediate',
-    'plan' => 'premium'
-]);
-$sampleUser->save();
+        $program = WorkoutProgram::create([
+            'user_id' => $admin->id,
+            'title' => 'Full Body Starter',
+            'description' => 'Rutina global para todos los usuarios.',
+            'goal' => 'performance',
+            'level' => 'beginner',
+            'type' => 'full_body',
+            'is_global' => true,
+            'is_active' => true,
+        ]);
 
-$exerciseData = json_decode(file_get_contents(__DIR__ . '/exercise_seed.json'), true);
-foreach ($exerciseData as $exercise) {
-    (new Exercise($exercise))->save();
+        $day = WorkoutDay::create([
+            'workout_program_id' => $program->id,
+            'title' => 'Día 1 - Full Body',
+            'day_order' => 1,
+        ]);
+
+        Exercise::inRandomOrder()->limit(5)->get()->each(function (Exercise $exercise, $index) use ($day) {
+            WorkoutExercise::create([
+                'workout_day_id' => $day->id,
+                'exercise_id' => $exercise->id,
+                'order' => $index + 1,
+                'sets' => 3,
+                'reps' => 12,
+                'rest_seconds' => 60,
+            ]);
+        });
+    }
+
+    protected function seedExercises(): void
+    {
+        $data = json_decode(file_get_contents(database_path('seeders/exercises.json')), true);
+
+        collect($data)->each(function (array $exercise) {
+            Exercise::updateOrCreate(
+                ['slug' => Str::slug($exercise['name_en'])],
+                array_merge($exercise, [
+                    'slug' => Str::slug($exercise['name_en']),
+                    'secondary_muscles' => $exercise['secondary_muscles'] ?? [],
+                    'tags' => $exercise['tags'] ?? [],
+                ])
+            );
+        });
+    }
 }
-
-$program = new WorkoutProgram([
-    'title' => 'Push Pull Legs',
-    'type' => 'push_pull_legs',
-    'owner_type' => 'global',
-    'days' => [
-        ['title' => 'Push', 'exercises' => ['Press banca', 'Fondos']],
-        ['title' => 'Pull', 'exercises' => ['Dominadas', 'Remo con barra']],
-        ['title' => 'Legs', 'exercises' => ['Sentadilla frontal', 'Peso muerto rumano']],
-    ]
-]);
-$program->save();
-
-$session = new WorkoutSession([
-    'user_id' => $sampleUser->id,
-    'date' => date('Y-m-d'),
-    'status' => 'completed',
-    'exercises' => [['name' => 'Press banca'], ['name' => 'Dominadas']],
-    'completed_exercises' => 2,
-    'total_exercises' => 2,
-    'intensity' => 3
-]);
-$session->save();
-
-for ($i = 0; $i < 6; $i++) {
-    $progress = new UserProgress([
-        'user_id' => $sampleUser->id,
-        'date' => date('Y-m-d', strtotime("-{$i} week")),
-        'weight' => 80 - $i,
-        'body_fat' => 18 - ($i * 0.2)
-    ]);
-    $progress->save();
-}
-
-echo "Seed completado\n";

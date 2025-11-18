@@ -1,14 +1,39 @@
 <?php
+
 namespace App\Models;
 
-class WorkoutProgram extends BaseModel
-{
-    protected static string $file = 'programs.json';
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-    public string $title;
-    public string $type;
-    public string $owner_type = 'global';
-    public int $user_id = 0;
-    public array $days = [];
-    public bool $is_active = false;
+class WorkoutProgram extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'title',
+        'description',
+        'goal',
+        'level',
+        'type',
+        'is_global',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_global' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function days(): HasMany
+    {
+        return $this->hasMany(WorkoutDay::class);
+    }
 }

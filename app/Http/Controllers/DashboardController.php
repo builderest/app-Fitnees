@@ -1,25 +1,29 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Core\AuthManager;
-use App\Core\Controller;
-use App\Core\Request;
+use App\Models\WorkoutProgram;
 use App\Models\WorkoutSession;
-use App\Services\ProgressService;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index(): void
+    public function __invoke()
     {
-        $user = AuthManager::user();
-        $sessions = WorkoutSession::filter(fn ($session) => $session->user_id === $user->id);
-        $progressService = new ProgressService();
-        $weightSeries = $progressService->weightSeries($user->id);
+        $user = Auth::user();
 
-        $this->view('dashboard.index', [
-            'user' => $user,
-            'sessions' => $sessions,
-            'weightSeries' => $weightSeries,
-        ]);
+        $activeProgram = WorkoutProgram::where('user_id', $user->id)
+            ->orWhere('is_global', true)
+            ->with('days.exercises.exercise')
+            ->orderByDesc('is_active')
+            ->latest()
+            ->first();
+
+        $recentSessions = WorkoutSession::where('user_id', $user->id)
+            ->latest('performed_at')
+            ->take(5)
+            ->get();
+
+        return view('dashboard.index', compact('user', 'activeProgram', 'recentSessions'));
     }
 }

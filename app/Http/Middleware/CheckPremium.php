@@ -1,18 +1,29 @@
 <?php
+
 namespace App\Http\Middleware;
 
-use App\Core\AuthManager;
-use App\Core\Request;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckPremium
 {
-    public function __invoke(Request $request, callable $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        $user = AuthManager::user();
-        if (!$user || $user->plan !== 'premium') {
-            flash('error', 'Necesitas Premium para acceder');
-            redirect('/pricing');
+        $user = $request->user();
+
+        if (! $user) {
+            return redirect()->route('pricing');
         }
-        return $next();
+
+        if (in_array($user->role, ['admin', 'coach'], true)) {
+            return $next($request);
+        }
+
+        if ($user->plan !== 'premium' || ($user->premium_until && $user->premium_until->isPast())) {
+            return redirect()->route('pricing')->withErrors('Necesitas un plan premium para acceder.');
+        }
+
+        return $next($request);
     }
 }

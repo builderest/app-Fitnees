@@ -1,53 +1,58 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Core\AuthManager;
-use App\Core\Controller;
-use App\Core\Request;
 use App\Models\WorkoutProgram;
 use App\Services\RoutineService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class RoutineController extends Controller
 {
-    public function index(): void
+    public function __construct(private RoutineService $service)
     {
-        $service = new RoutineService();
-        $user = AuthManager::user();
-        $programs = $service->userPrograms($user->id);
-        $this->view('routines.index', compact('programs'));
     }
 
-    public function create(): void
+    public function index(): View
     {
-        $this->view('routines.create');
+        $programs = WorkoutProgram::where('user_id', Auth::id())
+            ->orWhere('is_global', true)
+            ->with('days.exercises.exercise')
+            ->paginate(10);
+
+        return view('routines.index', compact('programs'));
     }
 
-    public function store(Request $request): void
+    public function create(): View
     {
-        $user = AuthManager::user();
-        $service = new RoutineService();
-        $rawDays = $request->post['days'] ?? [];
-        $parsedDays = [];
-        foreach ($rawDays as $day) {
-            $decoded = json_decode($day, true);
-            if ($decoded) {
-                $parsedDays[] = $decoded;
-            }
-        }
-        $data = [
-            'title' => $request->input('title'),
-            'type' => $request->input('type'),
-            'days' => $parsedDays,
-        ];
-        $service->createProgram($user->id, $data);
-        redirect('/routines');
+        return view('routines.create');
     }
 
-    public function activate(Request $request): void
+    public function store(Request $request): RedirectResponse
     {
-        $program = WorkoutProgram::find((int) $request->input('id'));
-        $service = new RoutineService();
-        $service->activate(AuthManager::user()->id, $program);
-        redirect('/routines');
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'goal' => ['nullable', 'string'],
+            'level' => ['nullable', 'string'],
+            'type' => ['required', 'string'],
+        ]);
+
+        WorkoutProgram::create(array_merge($data, [
+            'user_id' => Auth::id(),
+            'is_global' => false,
+        ]));
+
+        return redirect()->route('routines.index')->with('status', 'Rutina creada');
+    }
+
+    public function duplicate(WorkoutProgram $program): RedirectResponse
+    {
+        $this->authorize('update', $program);
+        $this->service->duplicate($program->load('days.exercises'), Auth::id());
+
+        return back()->with('status', 'Rutina duplicada');
     }
 }

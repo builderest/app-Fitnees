@@ -1,12 +1,26 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Core\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class PricingController extends Controller
 {
-    public function index(): void
+    public function index(): View
     {
-        $this->view('pricing.index');
+        return view('pricing.index');
+    }
+
+    public function activate(): RedirectResponse
+    {
+        $user = Auth::user();
+        $user->update([
+            'plan' => 'premium',
+            'premium_until' => now()->addMonth(),
+        ]);
+
+        return back()->with('status', 'Plan premium activado por 30 días.');
     }
 }

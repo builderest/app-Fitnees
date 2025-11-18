@@ -1,12 +1,31 @@
 <?php
+
 namespace App\Models;
 
-class WorkoutSessionExercise extends BaseModel
-{
-    protected static string $file = 'session_exercises.json';
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-    public int $session_id;
-    public int $exercise_id;
-    public int $sets_completed = 0;
-    public array $records = [];
+class WorkoutSessionExercise extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'workout_session_id',
+        'exercise_id',
+        'sets_completed',
+        'reps',
+        'weight',
+        'notes',
+    ];
+
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(WorkoutSession::class);
+    }
+
+    public function exercise(): BelongsTo
+    {
+        return $this->belongsTo(Exercise::class);
+    }
 }

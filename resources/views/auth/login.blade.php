@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - {{ config('app.name') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen">
-    <form method="POST" action="/login" class="bg-slate-900 p-8 rounded-xl space-y-4 w-full max-w-md">
-        <h1 class="text-2xl font-bold">Bienvenido</h1>
-        <div>
-            <label class="text-sm text-slate-400">Email</label>
-            <input type="email" name="email" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Password</label>
-            <input type="password" name="password" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <button class="w-full py-2 bg-indigo-600 rounded">Entrar</button>
-        <p class="text-sm text-center text-slate-400">¿No tienes cuenta? <a href="/register" class="text-indigo-400">Regístrate</a></p>
+<body class="flex h-full items-center justify-center bg-slate-950 text-white">
+<x-card class="w-full max-w-md">
+    <h1 class="text-2xl font-bold">Iniciar sesión</h1>
+    <form method="POST" action="{{ route('login') }}" class="mt-4 space-y-4">
+        @csrf
+        <x-input label="Email" name="email" type="email" />
+        <x-input label="Contraseña" name="password" type="password" />
+        <label class="flex items-center space-x-2 text-sm text-slate-300">
+            <input type="checkbox" name="remember" class="rounded border-slate-700 bg-slate-900">
+            <span>Recordarme</span>
+        </label>
+        <a href="{{ route('password.request') }}" class="block text-sm text-rose-400">¿Olvidaste la contraseña?</a>
+        <x-button class="w-full">Entrar</x-button>
     </form>
+    <p class="mt-4 text-sm text-slate-400">¿Sin cuenta? <a href="{{ route('register') }}" class="text-rose-400">Regístrate</a></p>
+</x-card>
 </body>
 </html>

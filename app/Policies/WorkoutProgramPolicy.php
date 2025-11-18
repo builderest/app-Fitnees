@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Policies;
 
 use App\Models\User;
@@ -6,11 +7,13 @@ use App\Models\WorkoutProgram;
 
 class WorkoutProgramPolicy
 {
-    public function manage(User $user, WorkoutProgram $program): bool
+    public function update(User $user, WorkoutProgram $program): bool
     {
-        if (in_array($user->role, ['admin', 'coach'], true)) {
-            return true;
-        }
-        return $program->owner_type === 'user' && $program->user_id === $user->id;
+        return $user->id === $program->user_id || in_array($user->role, ['admin', 'coach'], true);
+    }
+
+    public function delete(User $user, WorkoutProgram $program): bool
+    {
+        return $this->update($user, $program);
     }
 }

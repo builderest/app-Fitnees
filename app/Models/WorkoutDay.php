@@ -1,11 +1,29 @@
 <?php
+
 namespace App\Models;
 
-class WorkoutDay extends BaseModel
-{
-    protected static string $file = 'days.json';
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-    public int $program_id;
-    public string $title;
-    public array $exercises = [];
+class WorkoutDay extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'workout_program_id',
+        'title',
+        'day_order',
+    ];
+
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(WorkoutProgram::class, 'workout_program_id');
+    }
+
+    public function exercises(): HasMany
+    {
+        return $this->hasMany(WorkoutExercise::class);
+    }
 }

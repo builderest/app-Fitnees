@@ -1,20 +1,64 @@
 <?php
+
 namespace App\Models;
 
-class User extends BaseModel
-{
-    protected static string $file = 'users.json';
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
-    public string $name;
-    public string $email;
-    public string $password;
-    public string $role = 'user';
-    public ?string $weight = null;
-    public ?string $height = null;
-    public ?string $age = null;
-    public ?string $gender = null;
-    public ?string $training_goal = null;
-    public ?string $training_level = null;
-    public string $plan = 'free';
-    public ?string $premium_until = null;
+class User extends Authenticatable implements MustVerifyEmail
+{
+    use HasApiTokens, HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'weight',
+        'height',
+        'age',
+        'gender',
+        'training_goal',
+        'training_level',
+        'plan',
+        'premium_until',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'premium_until' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function workoutPrograms(): HasMany
+    {
+        return $this->hasMany(WorkoutProgram::class);
+    }
+
+    public function workoutSessions(): HasMany
+    {
+        return $this->hasMany(WorkoutSession::class);
+    }
+
+    public function progressEntries(): HasMany
+    {
+        return $this->hasMany(UserProgress::class);
+    }
+
+    protected function isPremium(): Attribute
+    {
+        return Attribute::get(function () {
+            return $this->plan === 'premium' && (! $this->premium_until || $this->premium_until->isFuture());
+        });
+    }
 }

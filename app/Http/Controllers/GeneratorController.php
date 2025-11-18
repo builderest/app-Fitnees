@@ -1,24 +1,35 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Core\Controller;
-use App\Core\Request;
 use App\Services\WorkoutGeneratorService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class GeneratorController extends Controller
 {
-    public function index(): void
+    public function __construct(private WorkoutGeneratorService $generator)
     {
-        $this->view('generator.index');
     }
 
-    public function generate(Request $request): void
+    public function index(): View
     {
-        $service = new WorkoutGeneratorService();
-        $equipment = $request->post['equipment'] ?? [];
-        $muscles = $request->post['muscles'] ?? [];
-        $count = (int) ($request->post['count'] ?? 6);
-        $result = $service->generate($equipment, $muscles, $count);
-        $this->view('generator.index', ['result' => $result]);
+        return view('generator.index');
+    }
+
+    public function generate(Request $request): View
+    {
+        $data = $request->validate([
+            'equipment' => ['required', 'array'],
+            'muscles' => ['required', 'array'],
+            'count' => ['required', 'integer', 'min:3', 'max:12'],
+        ]);
+
+        $result = $this->generator->generate($data['equipment'], $data['muscles'], $data['count']);
+
+        return view('generator.index', [
+            'generated' => $result,
+        ]);
     }
 }

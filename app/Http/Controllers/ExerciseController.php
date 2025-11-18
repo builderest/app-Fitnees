@@ -1,30 +1,40 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Core\Controller;
-use App\Core\Request;
 use App\Models\Exercise;
-use App\Services\ExerciseService;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ExerciseController extends Controller
 {
-    public function index(Request $request): void
+    public function index(Request $request): View
     {
-        $service = new ExerciseService();
-        $filters = [
-            'muscle' => $request->input('muscle'),
-            'equipment' => $request->input('equipment'),
-            'difficulty' => $request->input('difficulty'),
-            'search' => $request->input('search'),
-        ];
-        $exercises = $service->filter($filters);
-        $this->view('exercises.index', compact('exercises', 'filters'));
+        $query = Exercise::query();
+
+        if ($request->filled('muscle')) {
+            $query->where('primary_muscle', $request->string('muscle'));
+        }
+
+        if ($request->filled('difficulty')) {
+            $query->where('difficulty', $request->string('difficulty'));
+        }
+
+        if ($request->filled('equipment')) {
+            $query->where('equipment', $request->string('equipment'));
+        }
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%'.$request->string('search').'%');
+        }
+
+        $exercises = $query->paginate(12)->withQueryString();
+
+        return view('exercises.index', compact('exercises'));
     }
 
-    public function show(Request $request): void
+    public function show(Exercise $exercise): View
     {
-        $slug = $request->input('slug');
-        $exercise = Exercise::where('slug', $slug);
-        $this->view('exercises.show', compact('exercise'));
+        return view('exercises.show', compact('exercise'));
     }
 }

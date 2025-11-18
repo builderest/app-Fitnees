@@ -1,14 +1,18 @@
-module.exports = {
+import defaultTheme from 'tailwindcss/defaultTheme';
+import forms from '@tailwindcss/forms';
+
+export default {
     content: [
-        './resources/views/**/*.blade.php'
+        './resources/**/*.blade.php',
+        './resources/**/*.js',
+        './resources/**/*.vue',
     ],
-    darkMode: 'class',
     theme: {
         extend: {
-            colors: {
-                brand: '#7c3aed'
-            }
-        }
+            fontFamily: {
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+            },
+        },
     },
-    plugins: []
+    plugins: [forms],
 };

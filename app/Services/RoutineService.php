@@ -1,41 +1,37 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\WorkoutProgram;
-use App\Models\WorkoutDay;
+use Illuminate\Support\Facades\DB;
 
 class RoutineService
 {
-    public function userPrograms(int $userId): array
+    public function duplicate(WorkoutProgram $program, int $userId): WorkoutProgram
     {
-        return WorkoutProgram::filter(fn ($program) => $program->owner_type === 'user' && $program->user_id === $userId);
-    }
+        return DB::transaction(function () use ($program, $userId) {
+            $copy = $program->replicate([
+                'user_id', 'is_global', 'is_active'
+            ]);
+            $copy->user_id = $userId;
+            $copy->is_global = false;
+            $copy->is_active = false;
+            $copy->title = $program->title.' (copy)';
+            $copy->save();
 
-    public function createProgram(int $userId, array $data): WorkoutProgram
-    {
-        $program = new WorkoutProgram($data);
-        $program->owner_type = 'user';
-        $program->user_id = $userId;
-        $program->days = $data['days'] ?? [];
-        $program->save();
-        return $program;
-    }
+            foreach ($program->days as $day) {
+                $newDay = $day->replicate(['workout_program_id']);
+                $newDay->workout_program_id = $copy->id;
+                $newDay->save();
 
-    public function duplicate(WorkoutProgram $program): WorkoutProgram
-    {
-        $clone = new WorkoutProgram(get_object_vars($program));
-        $clone->id = null;
-        $clone->title .= ' (Copy)';
-        $clone->is_active = false;
-        $clone->save();
-        return $clone;
-    }
+                foreach ($day->exercises as $exercise) {
+                    $newDay->exercises()->create($exercise->only([
+                        'exercise_id', 'order', 'sets', 'reps', 'weight', 'rest_seconds', 'notes'
+                    ]));
+                }
+            }
 
-    public function activate(int $userId, WorkoutProgram $program): void
-    {
-        foreach ($this->userPrograms($userId) as $userProgram) {
-            $userProgram->is_active = $userProgram->id === $program->id;
-            $userProgram->save();
-        }
+            return $copy->fresh('days.exercises');
+        });
     }
 }

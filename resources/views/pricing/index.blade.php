@@ -1,23 +1,18 @@
-<?php ob_start(); ?>
-<section class="bg-slate-900 p-6 rounded-xl space-y-6">
-    <h1 class="text-3xl font-bold">Planes</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900">
-            <h2 class="text-xl font-semibold">FREE</h2>
-            <ul class="text-sm text-slate-400 mt-4 space-y-2">
-                <li>Historial 6 meses</li>
-                <li>Generador básico</li>
-                <li>Rutinas limitadas</li>
-            </ul>
-        </div>
-        <div class="p-6 rounded-2xl border border-indigo-500 bg-slate-800/40">
-            <h2 class="text-xl font-semibold">PREMIUM</h2>
-            <ul class="text-sm text-slate-200 mt-4 space-y-2">
-                <li>Acceso ilimitado</li>
-                <li>Generador avanzado</li>
-                <li>Stats y PR tracker</li>
-            </ul>
-        </div>
-    </div>
-</section>
-<?php $slot = ob_get_clean(); include resource_path('views/layouts/app.blade.php'); ?>
+@extends('layouts.app')
+
+@section('content')
+<div class="grid gap-6 md:grid-cols-2">
+    <x-card>
+        <h2 class="text-xl font-semibold">Free</h2>
+        <p class="mt-2 text-sm text-slate-400">Historial 6 meses, generador limitado.</p>
+    </x-card>
+    <x-card>
+        <h2 class="text-xl font-semibold">Premium</h2>
+        <p class="mt-2 text-sm text-slate-400">Acceso total a rutinas, stats y modo sesión.</p>
+        <form method="POST" action="{{ route('pricing.activate') }}" class="mt-4">
+            @csrf
+            <x-button>Activar demo premium</x-button>
+        </form>
+    </x-card>
+</div>
+@endsection

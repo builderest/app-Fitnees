@@ -1,18 +1,30 @@
-<?php ob_start(); ?>
-<section class="space-y-6">
-    <div class="bg-slate-900 p-6 rounded-xl">
-        <h2 class="text-xl font-semibold mb-4">Sesiones recientes</h2>
-        <div class="space-y-3">
-            <?php foreach ($sessions as $session): ?>
-                <div class="flex items-center justify-between border border-slate-800 rounded-lg p-4">
-                    <div>
-                        <p class="text-sm text-slate-400"><?php echo $session->date; ?></p>
-                        <p class="text-lg font-semibold"><?php echo $session->status; ?></p>
-                    </div>
-                    <div class="text-right text-sm text-slate-400"><?php echo $session->completed_exercises; ?>/<?php echo $session->total_exercises; ?> ejercicios</div>
+@extends('layouts.app')
+
+@section('content')
+<x-card>
+    <h1 class="text-2xl font-bold">Registrar sesión</h1>
+    <form method="POST" action="{{ route('sessions.store') }}" class="mt-4 grid gap-4 md:grid-cols-2">
+        @csrf
+        <x-input label="ID Programa" name="workout_program_id" />
+        <x-input label="ID Día" name="workout_day_id" />
+        <x-input label="Intensidad" name="intensity" />
+        <x-input label="Notas" name="notes" class="md:col-span-2" />
+        <x-button class="md:col-span-2">Guardar sesión</x-button>
+    </form>
+</x-card>
+
+<div class="mt-6 space-y-4">
+    @foreach($sessions as $session)
+        <x-card>
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-400">{{ optional($session->performed_at)->format('d M Y') }}</p>
+                    <p class="font-semibold">{{ $session->intensity ?? 'Sin intensidad' }}</p>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php $slot = ob_get_clean(); include resource_path('views/layouts/app.blade.php'); ?>
+                <p class="text-sm text-slate-400">{{ $session->notes }}</p>
+            </div>
+        </x-card>
+    @endforeach
+</div>
+<div class="mt-6">{{ $sessions->links() }}</div>
+@endsection

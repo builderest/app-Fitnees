@@ -1,53 +1,23 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registro - {{ config('app.name') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen">
-    <form method="POST" action="/register" class="bg-slate-900 p-8 rounded-xl space-y-4 w-full max-w-2xl grid grid-cols-2 gap-4">
-        <h1 class="text-2xl font-bold col-span-2">Crear cuenta</h1>
-        <div>
-            <label class="text-sm text-slate-400">Nombre</label>
-            <input type="text" name="name" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Email</label>
-            <input type="email" name="email" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Password</label>
-            <input type="password" name="password" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Meta</label>
-            <select name="training_goal" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-                <option value="fat_loss">Perder grasa</option>
-                <option value="muscle_gain">Ganar músculo</option>
-                <option value="maintain">Mantener</option>
-                <option value="performance">Performance</option>
-            </select>
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Nivel</label>
-            <select name="training_level" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-            </select>
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Edad</label>
-            <input type="number" name="age" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div>
-            <label class="text-sm text-slate-400">Peso</label>
-            <input type="number" name="weight" class="w-full mt-1 px-3 py-2 rounded bg-slate-800 border border-slate-700">
-        </div>
-        <div class="col-span-2">
-            <button class="w-full py-3 bg-indigo-600 rounded">Crear cuenta</button>
-        </div>
+<body class="flex h-full items-center justify-center bg-slate-950 text-white">
+<x-card class="w-full max-w-md">
+    <h1 class="text-2xl font-bold">Crear cuenta</h1>
+    <form method="POST" action="{{ route('register') }}" class="mt-4 space-y-4">
+        @csrf
+        <x-input label="Nombre" name="name" />
+        <x-input label="Email" name="email" type="email" />
+        <x-input label="Contraseña" name="password" type="password" />
+        <x-input label="Confirmar" name="password_confirmation" type="password" />
+        <x-button class="w-full">Registrar</x-button>
     </form>
+    <p class="mt-4 text-sm text-slate-400">¿Ya tienes cuenta? <a href="{{ route('login') }}" class="text-rose-400">Inicia sesión</a></p>
+</x-card>
 </body>
 </html>
