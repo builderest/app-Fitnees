@@ -1,5 +1,6 @@
-CREATE DATABASE IF NOT EXISTS vidapro CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE vidapro;
+-- The database instance already exists as u212136830_vidapro,
+-- so we simply select it before creating the tables.
+USE u212136830_vidapro;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
