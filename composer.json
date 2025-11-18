@@ -1,0 +1,16 @@
+{
+    "name": "fitness/platform",
+    "description": "Offline fitness training platform inspired by Workout.cool",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": [
+            "bootstrap/helpers.php"
+        ]
+    }
+}
