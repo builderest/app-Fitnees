@@ -1,70 +1,76 @@
 <?php
-declare(strict_types=1);
-
 require_once __DIR__ . '/db.php';
 
 $pdo = getPDO();
-$input = sanitize(array_merge($_POST, getJsonInput()));
 $action = $_GET['action'] ?? '';
 
-switch ($_SERVER['REQUEST_METHOD']) {
-    case 'POST':
-        if ($action === 'register') {
-            register($pdo, $input);
-        } elseif ($action === 'login') {
-            login($pdo, $input);
-        } elseif ($action === 'logout') {
-            logout($pdo);
-        }
+switch ($action) {
+    case 'register':
+        register($pdo);
+        break;
+    case 'login':
+        login($pdo);
+        break;
+    case 'logout':
+        logout($pdo);
         break;
     default:
-        jsonResponse(['error' => 'Método no permitido'], 405);
+        jsonResponse(['error' => 'Acción no soportada'], 400);
 }
 
-function register(PDO $pdo, array $input): void
+function register(PDO $pdo): void
 {
-    $email = filter_var($input['email'] ?? '', FILTER_VALIDATE_EMAIL);
-    $name = trim($input['name'] ?? '');
-    $password = $input['password'] ?? '';
-    if (!$email || !$name || strlen($password) < 6) {
-        jsonResponse(['error' => 'Datos inválidos'], 422);
+    $data = getJsonInput();
+    $required = ['name','email','password','gender','birthdate','level'];
+    foreach ($required as $field) {
+        if (empty($data[$field])) {
+            jsonResponse(['error' => "Campo {$field} es obligatorio"], 422);
+        }
     }
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = :email');
-    $stmt->execute(['email' => $email]);
+    $stmt->execute([':email' => strtolower($data['email'])]);
     if ($stmt->fetch()) {
-        jsonResponse(['error' => 'Usuario existente'], 409);
+        jsonResponse(['error' => 'El email ya está registrado'], 409);
     }
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare('INSERT INTO users (name, email, password) VALUES (:name, :email, :pass)');
-    $stmt->execute(['name' => $name, 'email' => $email, 'pass' => $hash]);
-    jsonResponse(['message' => 'Registro exitoso']);
+    $stmt = $pdo->prepare('INSERT INTO users (name, email, password, gender, birthdate, level, created_at) VALUES (:name, :email, :password, :gender, :birthdate, :level, NOW())');
+    $stmt->execute([
+        ':name' => trim($data['name']),
+        ':email' => strtolower($data['email']),
+        ':password' => hashPassword($data['password']),
+        ':gender' => $data['gender'],
+        ':birthdate' => $data['birthdate'],
+        ':level' => $data['level']
+    ]);
+    jsonResponse(['message' => 'Cuenta creada con éxito'], 201);
 }
 
-function login(PDO $pdo, array $input): void
+function login(PDO $pdo): void
 {
-    $email = filter_var($input['email'] ?? '', FILTER_VALIDATE_EMAIL);
-    $password = $input['password'] ?? '';
-    if (!$email || !$password) {
-        jsonResponse(['error' => 'Credenciales inválidas'], 422);
+    $data = getJsonInput();
+    if (empty($data['email']) || empty($data['password'])) {
+        jsonResponse(['error' => 'Email y contraseña son obligatorios'], 422);
     }
-    $stmt = $pdo->prepare('SELECT id, password, name FROM users WHERE email = :email');
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
-    if (!$user || !password_verify($password, $user['password'])) {
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');
+    $stmt->execute([':email' => strtolower($data['email'])]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user || !verifyPassword($data['password'], $user['password'])) {
         jsonResponse(['error' => 'Credenciales inválidas'], 401);
     }
     $token = bin2hex(random_bytes(32));
-    $pdo->prepare('INSERT INTO sessions (user_id, token, expires_at) VALUES (:uid, :token, DATE_ADD(NOW(), INTERVAL 7 DAY))')
-        ->execute(['uid' => $user['id'], 'token' => $token]);
-    jsonResponse(['token' => $token, 'user' => ['id' => (int)$user['id'], 'name' => $user['name']]]);
+    $stmt = $pdo->prepare('INSERT INTO sessions (user_id, token, expires_at, created_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 DAY), NOW())');
+    $stmt->execute([
+        ':user_id' => $user['id'],
+        ':token' => $token
+    ]);
+    jsonResponse(['token' => $token, 'user' => ['name' => $user['name'], 'email' => $user['email'], 'level' => $user['level']]]);
 }
 
 function logout(PDO $pdo): void
 {
-    $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/Bearer\s+(.*)$/i', $auth, $matches)) {
-        $token = trim($matches[1]);
-        $pdo->prepare('DELETE FROM sessions WHERE token = :token')->execute(['token' => $token]);
+    $token = getBearerToken();
+    if ($token) {
+        $stmt = $pdo->prepare('DELETE FROM sessions WHERE token = :token');
+        $stmt->execute([':token' => $token]);
     }
     jsonResponse(['message' => 'Sesión cerrada']);
 }

@@ -9,19 +9,15 @@ function getPDO(): PDO
     if ($pdo instanceof PDO) {
         return $pdo;
     }
-    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8mb4', DB_HOST, DB_NAME);
+    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8mb4', env('DB_HOST', 'localhost'), env('DB_NAME', 'fitlifepro'));
     $options = [
-        PDO::ATTR_ERRMODE => APP_ENV === 'production' ? PDO::ERRMODE_SILENT : PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
     ];
     try {
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
-    } catch (PDOException $e) {
-        if (APP_DEBUG) {
-            jsonResponse(['error' => $e->getMessage()], 500);
-        }
-        jsonResponse(['error' => 'Database connection error'], 500);
+        $pdo = new PDO($dsn, env('DB_USER'), env('DB_PASS'), $options);
+    } catch (PDOException $exception) {
+        jsonResponse(['error' => 'No se pudo conectar a la base de datos'], 500);
     }
     return $pdo;
 }

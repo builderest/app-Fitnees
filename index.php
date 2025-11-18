@@ -1,11 +1,10 @@
 <?php
-// VidaPro+ WebApp bootstrap front controller
+// FitLifePro bootstrap front controller
 
 declare(strict_types=1);
 
 define('APP_ROOT', __DIR__);
 
-// Simple .env loader
 $envFile = APP_ROOT . DIRECTORY_SEPARATOR . '.env';
 if (is_file($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
