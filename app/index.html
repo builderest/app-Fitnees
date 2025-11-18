@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="theme-color" content="#0b8c7a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FitLifePro</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="screen-warning" class="screen-warning hidden">
+        <img src="assets/images/ui/empty-state.svg" alt="Solo móvil">
+        <h1>FitLifePro</h1>
+        <p>Optimizada para pantallas móviles. Reduce el ancho o usa tu smartphone.</p>
+    </div>
+
+    <section id="authScreen" class="auth-screen">
+        <div class="auth-card">
+            <h1>FitLifePro</h1>
+            <p>Tu entrenador personal inteligente.</p>
+            <form id="loginForm" class="stacked">
+                <h2>Iniciar sesión</h2>
+                <label>Email<input type="email" name="email" required></label>
+                <label>Contraseña<input type="password" name="password" required minlength="6"></label>
+                <button type="submit">Entrar</button>
+            </form>
+            <form id="registerForm" class="stacked">
+                <h2>Crear cuenta</h2>
+                <label>Nombre<input type="text" name="name" required></label>
+                <label>Email<input type="email" name="email" required></label>
+                <label>Contraseña<input type="password" name="password" required minlength="6"></label>
+                <label>Sexo<select name="gender" required><option value="femenino">Femenino</option><option value="masculino">Masculino</option></select></label>
+                <label>Fecha de nacimiento<input type="date" name="birthdate" required></label>
+                <label>Nivel<select name="level" required><option value="principiante">Principiante</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></label>
+                <button type="submit" class="ghost">Registrarme</button>
+            </form>
+        </div>
+    </section>
+
+    <div id="appShell" class="app-shell hidden">
+        <header class="app-header">
+            <div>
+                <p class="muted">Bienvenido</p>
+                <h1 id="userName">FitLifePro</h1>
+            </div>
+            <div class="header-actions">
+                <button id="btnToggleTheme" aria-label="Cambiar tema">🌓</button>
+                <button id="btnLogout" class="ghost">Salir</button>
+            </div>
+        </header>
+
+        <main id="views">
+            <section id="view-home" class="view active">
+                <div class="grid-cards" id="dashboardCards"></div>
+                <article class="card stretch" id="todayRoutine"></article>
+                <article class="card stretch" id="hydrationCard"></article>
+            </section>
+
+            <section id="view-rutinas" class="view">
+                <div class="section-header">
+                    <h2>Mis rutinas</h2>
+                    <button id="btnAddRoutine" class="ghost">Nueva</button>
+                </div>
+                <div id="routineList" class="stacked"></div>
+                <article class="card" id="routinePlayer">
+                    <h3>Temporizador</h3>
+                    <div class="timer" id="timerDisplay">00:00</div>
+                    <div class="timer-controls">
+                        <button id="btnTimerStart">Iniciar</button>
+                        <button id="btnTimerPause" class="ghost">Pausa</button>
+                        <button id="btnTimerReset" class="ghost">Reiniciar</button>
+                    </div>
+                </article>
+            </section>
+
+            <section id="view-ejercicios" class="view">
+                <div class="section-header">
+                    <h2>Biblioteca de ejercicios</h2>
+                    <input type="search" id="exerciseSearch" placeholder="Buscar">
+                </div>
+                <div id="exerciseList" class="grid-cards"></div>
+            </section>
+
+            <section id="view-alimentacion" class="view">
+                <div class="section-header">
+                    <h2>Alimentación</h2>
+                    <button id="btnAddMeal" class="ghost">Agregar comida</button>
+                </div>
+                <article class="card" id="calorieSummary"></article>
+                <div id="mealList" class="stacked"></div>
+            </section>
+
+            <section id="view-progreso" class="view">
+                <div class="section-header">
+                    <h2>Progreso</h2>
+                </div>
+                <article class="card"><canvas id="chartPeso" height="220"></canvas></article>
+                <article class="card"><canvas id="chartEntrenos" height="220"></canvas></article>
+                <article class="card"><canvas id="chartCalorias" height="220"></canvas></article>
+            </section>
+
+            <section id="view-perfil" class="view">
+                <article class="card" id="profileCard"></article>
+                <article class="card" id="goalCard"></article>
+            </section>
+        </main>
+
+        <nav class="bottom-nav" id="bottomNav">
+            <button data-target="view-home" class="active">Inicio</button>
+            <button data-target="view-rutinas">Rutinas</button>
+            <button data-target="view-ejercicios">Ejercicios</button>
+            <button data-target="view-alimentacion">Alimentación</button>
+            <button data-target="view-progreso">Progreso</button>
+            <button data-target="view-perfil">Perfil</button>
+        </nav>
+    </div>
+
+    <audio id="beepAudio" preload="auto" src="data:audio/wav;base64,UklGRhQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

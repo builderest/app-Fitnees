@@ -1,0 +1,25 @@
+RewriteEngine On
+
+# Force HTTPS when available
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Protect environment file
+<Files ".env">
+    Require all denied
+</Files>
+
+# Prevent direct access to SQL dumps
+RewriteRule ^sql/ - [F,L]
+
+# Basic CORS for API
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Clean URLs for API (optional)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ api/$1 [L,QSA]
